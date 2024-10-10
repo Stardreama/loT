@@ -19,19 +19,42 @@ app.use(bodyParser.json());
 app.use('/api/device', deviceRoutes);
 app.use('/api/control', controlRoutes);
 
-wss.on('connection', (ws) => {
+wss.on('connection', async (ws) => {
     console.log('Client connected to WebSocket');
-    
+
+    // 当客户端连接时，立即加载历史记录和用户操作日志
+    try {
+        const history = await DeviceStatus.findAll({
+            limit: 100,
+            order: [['timestamp', 'DESC']]
+        });
+        ws.send(JSON.stringify({ type: 'historyUpdate', data: history }));
+
+        // 查询最新的设备状态并发送
+        const latestStatus = await DeviceStatus.findOne({
+            order: [['timestamp', 'DESC']]
+        });
+        if (latestStatus) {
+            ws.send(JSON.stringify({ type: 'newStatus', data: latestStatus }));
+        }
+        const logs = await UserLog.findAll({
+            limit: 100,
+            order: [['timestamp', 'DESC']]
+        });
+        ws.send(JSON.stringify({ type: 'logsUpdate', data: logs }));
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+    }
+
     ws.on('message', (message) => {
         console.log(`Received message from client: ${message}`);
     });
-
-    ws.send(JSON.stringify({ message: 'Welcome to WebSocket server' }));
 
     ws.on('close', () => {
         console.log('Client disconnected');
     });
 });
+
 
 // 广播函数
 const broadcast = (data) => {
@@ -60,6 +83,7 @@ mqttClient.on('message', async (topic, message) => {
             pressure,
             depth
         };
+
         console.log('Parsed data:', data);
         
         // 保存设备状态到数据库
