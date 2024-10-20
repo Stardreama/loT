@@ -1,6 +1,6 @@
 const mqtt = require('mqtt');
 const { DeviceStatus, UserLog } = require('../models');
-
+const { clients, sendHistory, sendLatestStatus, sendLogs } = require('../index');
 const broker = '172.6.0.240'; // 替换为您的 MQTT Broker 地址
 const port = 1883;
 const topicSensor = 'sensor/data';

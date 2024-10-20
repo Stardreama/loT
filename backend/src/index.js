@@ -146,3 +146,9 @@ server.listen(PORT, async () => {
         console.error('Unable to connect to the database:', err);
     }
 });
+module.exports = {
+    clients,
+    sendHistory,
+    sendLatestStatus,
+    sendLogs
+};
