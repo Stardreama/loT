@@ -87,13 +87,13 @@ wss.on('connection', async (ws) => {
 
 
 // 广播函数
-// const broadcast = (data) => {
-//     wss.clients.forEach((client) => {
-//         if (client.readyState === WebSocket.OPEN) {
-//             client.send(JSON.stringify(data));
-//         }
-//     });
-// };
+const broadcast = (data) => {
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+    });
+};
 
 // 处理 MQTT 消息并广播
 mqttClient.on('message', async (topic, message) => {
@@ -124,7 +124,6 @@ mqttClient.on('message', async (topic, message) => {
             timestamp: new Date()
         });
 
-        // 向所有连接的 WebSocket 客户端发送更新的历史记录和日志
         clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
                 sendHistory(client); // 重新发送历史记录
@@ -132,22 +131,6 @@ mqttClient.on('message', async (topic, message) => {
                 sendLogs(client); // 重新发送日志
             }
         });
-
-        // 广播新设备状态
-        // broadcast({ type: 'newStatus', data });
-
-        // // 查询最新的历史记录和用户操作日志并广播
-        // const history = await DeviceStatus.findAll({
-        //     limit: 100,
-        //     order: [['timestamp', 'DESC']]
-        // });
-        // broadcast({ type: 'historyUpdate', data: history });
-
-        // const logs = await UserLog.findAll({
-        //     limit: 100,
-        //     order: [['timestamp', 'DESC']]
-        // });
-        // broadcast({ type: 'logsUpdate', data: logs });
     } else {
         console.error('Failed to parse MQTT message:', messageStr);
     }

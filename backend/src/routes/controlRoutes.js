@@ -23,7 +23,7 @@ router.post('/move', async (req, res) => {
     await UserLog.create({ action: direction });
 
     res.json({ status: 'Message sent' });
-    console.log("发送完成");
+    console.log("后端接收完成");
     
 });
 
