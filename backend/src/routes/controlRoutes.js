@@ -19,9 +19,6 @@ router.post('/move', async (req, res) => {
         }
     });
 
-    // // 记录用户操作日志
-    // await UserLog.create({ action: direction });
-
     res.json({ status: 'Message sent' });
     console.log("后端接收完成");
     

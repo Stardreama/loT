@@ -43,6 +43,23 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleKeyUp = (e) => {
+      if (e.key === 'w' || e.key === 'W') handleControl("forward");
+      else if (e.key === 'a' || e.key === 'A') handleControl("left");
+      else if (e.key === 's' || e.key === 'S') handleControl("backward");
+      else if (e.key === 'd' || e.key === 'D') handleControl("right");
+      else message.error("按键错误");
+    };
+  
+    document.addEventListener('keyup', handleKeyUp);
+  
+    return () => {
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+  
+
   const handleControl = async (direction) => {
     try {
       console.log("进入处理移动逻辑");
@@ -98,10 +115,12 @@ function App() {
         水下机器人控制平台
       </Title>
       <Space className="controls" direction="vertical">
-        <Button type="primary" onClick={() => handleControl("forward")}>前进</Button>
+        <Button onClick={() => handleControl("forward")}>前进</Button>
+        <Space direction="horizontal">
+          <Button onClick={() => handleControl("left")}>左转</Button>
+          <Button onClick={() => handleControl("right")}>右转</Button>
+        </Space>
         <Button onClick={() => handleControl("backward")}>后退</Button>
-        <Button onClick={() => handleControl("left")}>左转</Button>
-        <Button onClick={() => handleControl("right")}>右转</Button>
       </Space>
       <Card className="status-card">
         <Title level={3}>设备状态</Title>

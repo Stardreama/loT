@@ -9,7 +9,6 @@ const sequelize = new Sequelize('iot_platform', 'root', '20050127a', {
 const DeviceStatus = require('./DeviceStatus')(sequelize);
 const UserLog = require('./UserLog')(sequelize);
 
-// 关联模型（如有需要）
 
 sequelize.sync()
     .then(() => {

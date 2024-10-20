@@ -13,7 +13,15 @@
 }
 
 .controls {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  height: 200px; /* 根据实际情况调整高度 */
+}
+
+.controls button {
+  margin: 5px;
 }
 
 .status-card, .history-card, .logs-card {
