@@ -3,6 +3,7 @@ const { Sequelize } = require('sequelize');
 const sequelize = new Sequelize('iot_platform', 'root', '20050127a', {
     host: 'localhost',
     dialect: 'mysql',
+    logging: false,  // 禁用日志输出
 });
 
 const DeviceStatus = require('./DeviceStatus')(sequelize);

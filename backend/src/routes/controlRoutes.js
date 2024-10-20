@@ -5,6 +5,8 @@ const { UserLog } = require('../models');
 
 // 控制设备移动
 router.post('/move', async (req, res) => {
+    console.log("发送到后端");
+    
     const { direction } = req.body; // 'forward', 'backward', 'left', 'right'
     if (!['forward', 'backward', 'left', 'right'].includes(direction)) {
         return res.status(400).json({ error: 'Invalid direction' });
@@ -21,6 +23,8 @@ router.post('/move', async (req, res) => {
     await UserLog.create({ action: direction });
 
     res.json({ status: 'Message sent' });
+    console.log("发送完成");
+    
 });
 
 module.exports = router;

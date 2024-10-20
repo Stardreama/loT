@@ -45,6 +45,7 @@ function App() {
 
   const handleControl = async (direction) => {
     try {
+      console.log("进入处理移动逻辑");
       await sendControl(direction); // 调用 API 发送控制指令
       message.success(`控制指令已发送: ${direction}`);
     } catch (error) {

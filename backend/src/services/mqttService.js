@@ -20,30 +20,34 @@ client.on('connect', () => {
         if (!err) {
             console.log(`Subscribed to ${topicControl}`);
         }
+        else{
+            console.log(err);
+            
+        }
     });
 });
 
-client.on('message', async (topic, message) => {
-    const msg = message.toString();
-    console.log(`Received message: ${msg} on topic ${topic}`);
+// client.on('message', async (topic, message) => {
+//     const msg = message.toString();
+//     //console.log(`Received message: ${msg} on topic ${topic}`);
 
-    if (topic === topicSensor) {
-        // 解析传感器数据
-        const regex = /Temperature: ([\d.]+) °C, Pressure: ([\d.]+) kPa, Depth: ([\d.]+) m/;
-        const match = msg.match(regex);
-        if (match) {
-            const temperature = parseFloat(match[1]);
-            const pressure = parseFloat(match[2]);
-            const depth = parseFloat(match[3]);
+//     if (topic === topicSensor) {
+//         // 解析传感器数据
+//         const regex = /Temperature: ([\d.]+) °C, Pressure: ([\d.]+) kPa, Depth: ([\d.]+) m/;
+//         const match = msg.match(regex);
+//         if (match) {
+//             const temperature = parseFloat(match[1]);
+//             const pressure = parseFloat(match[2]);
+//             const depth = parseFloat(match[3]);
 
-            // 存储到数据库
-            await DeviceStatus.create({ temperature, pressure, depth });
-        }
-    } else if (topic === topicControl) {
-        // 处理控制信号
-        const action = msg; // 假设消息为 'forward', 'backward', etc.
-        await UserLog.create({ action });
-    }
-});
+//             // 存储到数据库
+//             await DeviceStatus.create({ temperature, pressure, depth });
+//         }
+//     } else if (topic === topicControl) {
+//         // 处理控制信号
+//         const action = msg; // 假设消息为 'forward', 'backward', etc.
+//         await UserLog.create({ action });
+//     }
+// });
 
 module.exports = client;

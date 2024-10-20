@@ -15,6 +15,7 @@ export const getUserLogs = () => {
 };
 
 export const sendControl = (direction) => {
+    console.log("进入sendControl函数");
     return axios.post(`${API_BASE_URL}/control/move`, { direction });
 };
 
