@@ -7,7 +7,8 @@ const mqttClient = require('./services/mqttService');
 const { sequelize, DeviceStatus, UserLog } = require('./models');  // 确保引入相应的模型
 const http = require('http');  
 const WebSocket = require('ws');  
-
+const topicSensor = 'sensor/data';
+const topicControl = 'control/movement';
 const app = express();
 const server = http.createServer(app);  
 const wss = new WebSocket.Server({ server });  
@@ -86,53 +87,117 @@ wss.on('connection', async (ws) => {
 });
 
 
-// 广播函数
-const broadcast = (data) => {
-    wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(data));
-        }
-    });
-};
+// // 广播函数
+// const broadcast = (data) => {
+//     wss.clients.forEach((client) => {
+//         if (client.readyState === WebSocket.OPEN) {
+//             client.send(JSON.stringify(data));
+//         }
+//     });
+// };
 
-// 处理 MQTT 消息并广播
-mqttClient.on('message', async (topic, message) => {
-    //console.log(`MQTT message received: ${message}`);
-    const messageStr = message.toString();
+// // 处理 MQTT 消息并广播
+// mqttClient.on('message', async (topic, message) => {
+//     //console.log(`MQTT message received: ${message}`);
+//     const messageStr = message.toString();
 
-    const regex = /Temperature: ([\d.]+) °C, Pressure: ([\d.]+) kPa, Depth: ([\d.]+) m/;
-    const match = messageStr.match(regex);
+//     const regex = /Temperature: ([\d.]+) °C, Pressure: ([\d.]+) kPa, Depth: ([\d.]+) m/;
+//     const match = messageStr.match(regex);
 
-    if (match) {
-        const temperature = parseFloat(match[1]);
-        const pressure = parseFloat(match[2]);
-        const depth = parseFloat(match[3]);
+//     if (match) {
+//         const temperature = parseFloat(match[1]);
+//         const pressure = parseFloat(match[2]);
+//         const depth = parseFloat(match[3]);
 
-        const data = {
-            temperature,
-            pressure,
-            depth
-        };
+//         const data = {
+//             temperature,
+//             pressure,
+//             depth
+//         };
 
-        console.log('Parsed data:', data);
+//         console.log('Parsed data:', data);
         
-        // 保存设备状态到数据库
-        await DeviceStatus.create({
-            temperature,
-            pressure,
-            depth,
-            timestamp: new Date()
-        });
+//         // 保存设备状态到数据库
+//         await DeviceStatus.create({
+//             temperature,
+//             pressure,
+//             depth,
+//             timestamp: new Date()
+//         });
 
+//         clients.forEach(client => {
+//             if (client.readyState === WebSocket.OPEN) {
+//                 sendHistory(client); // 重新发送历史记录
+//                 sendLatestStatus(client); // 重新发送最新状态
+//                 sendLogs(client); // 重新发送日志
+//             }
+//         });
+
+//         // 广播新设备状态
+//         // broadcast({ type: 'newStatus', data });
+
+//         // // 查询最新的历史记录和用户操作日志并广播
+//         // const history = await DeviceStatus.findAll({
+//         //     limit: 100,
+//         //     order: [['timestamp', 'DESC']]
+//         // });
+//         // broadcast({ type: 'historyUpdate', data: history });
+
+//         // const logs = await UserLog.findAll({
+//         //     limit: 100,
+//         //     order: [['timestamp', 'DESC']]
+//         // });
+//         // broadcast({ type: 'logsUpdate', data: logs });
+//     } else {
+//         console.error('Failed to parse MQTT message:', messageStr);
+//     }
+// });
+
+mqttClient.on('message', async (topic, message) => {
+    const msg = message.toString();
+    //console.log(`Received message: ${msg} on topic ${topic}`);
+
+    if (topic === topicSensor) {
+        // 解析传感器数据
+        const regex = /Temperature: ([\d.]+) °C, Pressure: ([\d.]+) kPa, Depth: ([\d.]+) m/;
+        const match = msg.match(regex);
+        if (match) {
+            const temperature = parseFloat(match[1]);
+            const pressure = parseFloat(match[2]);
+            const depth = parseFloat(match[3]);
+
+            const data = {
+                temperature,
+                pressure,
+                depth
+            };
+    
+            console.log('Parsed data:', data);
+            
+            // 保存设备状态到数据库
+            await DeviceStatus.create({
+                temperature,
+                pressure,
+                depth,
+                timestamp: new Date()
+            });
+    
+            clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    sendHistory(client); // 重新发送历史记录
+                    sendLatestStatus(client); // 重新发送最新状态
+                }
+            });    
+        }
+    } else if (topic === topicControl) {
+        // 处理控制信号
+        const action = msg; // 假设消息为 'forward', 'backward', etc.
+        await UserLog.create({ action });
         clients.forEach(client => {
             if (client.readyState === WebSocket.OPEN) {
-                sendHistory(client); // 重新发送历史记录
-                sendLatestStatus(client); // 重新发送最新状态
                 sendLogs(client); // 重新发送日志
             }
-        });
-    } else {
-        console.error('Failed to parse MQTT message:', messageStr);
+        });   
     }
 });
 
@@ -146,9 +211,3 @@ server.listen(PORT, async () => {
         console.error('Unable to connect to the database:', err);
     }
 });
-module.exports = {
-    clients,
-    sendHistory,
-    sendLatestStatus,
-    sendLogs
-};

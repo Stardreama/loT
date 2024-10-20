@@ -1,6 +1,5 @@
 const mqtt = require('mqtt');
 const { DeviceStatus, UserLog } = require('../models');
-const { clients, sendHistory, sendLatestStatus, sendLogs } = require('../index');
 const broker = '172.6.0.240'; // 替换为您的 MQTT Broker 地址
 const port = 1883;
 const topicSensor = 'sensor/data';
@@ -49,5 +48,43 @@ client.on('connect', () => {
 //         await UserLog.create({ action });
 //     }
 // });
+// mqttClient.on('message', async (topic, message) => {
+//     //console.log(`MQTT message received: ${message}`);
+//     const messageStr = message.toString();
 
+//     const regex = /Temperature: ([\d.]+) °C, Pressure: ([\d.]+) kPa, Depth: ([\d.]+) m/;
+//     const match = messageStr.match(regex);
+
+//     if (match) {
+//         const temperature = parseFloat(match[1]);
+//         const pressure = parseFloat(match[2]);
+//         const depth = parseFloat(match[3]);
+
+//         const data = {
+//             temperature,
+//             pressure,
+//             depth
+//         };
+
+//         console.log('Parsed data:', data);
+        
+//         // 保存设备状态到数据库
+//         await DeviceStatus.create({
+//             temperature,
+//             pressure,
+//             depth,
+//             timestamp: new Date()
+//         });
+
+//         clients.forEach(client => {
+//             if (client.readyState === WebSocket.OPEN) {
+//                 sendHistory(client); // 重新发送历史记录
+//                 sendLatestStatus(client); // 重新发送最新状态
+//                 sendLogs(client); // 重新发送日志
+//             }
+//         });
+//     } else {
+//         console.error('Failed to parse MQTT message:', messageStr);
+//     }
+// });
 module.exports = client;
